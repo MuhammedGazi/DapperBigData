@@ -1,0 +1,399 @@
+﻿@using HealthBigData.Dtos.DefaultDtos
+@model CityDescriptionDto
+
+<style>
+    .dashboard-card {
+        border: none;
+        border-radius: 12px;
+        background: #fff;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        margin-bottom: 20px;
+    }
+
+        .dashboard-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        .dashboard-card .card-header {
+            background-color: #fff;
+            border-bottom: 1px solid #f0f0f0;
+            font-weight: 700;
+            color: #5a5c69;
+            padding: 15px 20px;
+            border-radius: 12px 12px 0 0;
+        }
+
+    .stat-card {
+        color: white;
+        overflow: hidden;
+        position: relative;
+    }
+
+    .bg-gradient-primary {
+        background: linear-gradient(45deg, #4e73df, #224abe);
+    }
+
+    .bg-gradient-success {
+        background: linear-gradient(45deg, #1cc88a, #13855c);
+    }
+
+    .bg-gradient-info {
+        background: linear-gradient(45deg, #36b9cc, #258391);
+    }
+
+    .bg-gradient-warning {
+        background: linear-gradient(45deg, #f6c23e, #dda20a);
+    }
+
+    .stat-value {
+        font-size: 1.8rem;
+        font-weight: bold;
+        margin: 10px 0;
+    }
+
+    .stat-label {
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        opacity: 0.8;
+    }
+
+    .chart-box {
+        position: relative;
+        height: 250px;
+        width: 100%;
+    }
+
+    .chart-box-large {
+        position: relative;
+        height: 350px;
+        width: 100%;
+    }
+</style>
+
+<div class="container-fluid p-2">
+
+    <!-- 1. BÖLÜM: ÜST KARTLAR -->
+    <div class="row g-3 mb-4">
+        <div class="col-xl-3 col-md-6">
+            <div class="card dashboard-card stat-card bg-gradient-primary h-100">
+                <div class="card-body">
+                    <div class="stat-label">Toplam Hasta</div>
+                    <div class="stat-value">@Model.ToplamHastaSayisi.ToString("N0")</div>
+                    <small>Başvuru: @Model.ToplamBasvuru.ToString("N0")</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="card dashboard-card stat-card bg-gradient-success h-100">
+                <div class="card-body">
+                    <div class="stat-label">Toplam Maliyet</div>
+                    <div class="stat-value">@Model.ToplamMaliyet.ToString("C0")</div>
+                    <small>Ort: @Model.OrtalamaMaliyet.ToString("C2")</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="card dashboard-card stat-card bg-gradient-info h-100">
+                <div class="card-body">
+                    <div class="stat-label">Ortalamalar</div>
+                    <div class="stat-value">@Model.OrtalamaYas.ToString("0.0") <span style="font-size:1rem">Yaş</span></div>
+                    <div class="stat-value">@Model.OrtalamaHaneHalki.ToString("0.0") <span style="font-size:1rem">Hane Halkı</span></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="card dashboard-card stat-card bg-gradient-warning h-100 text-white">
+                <div class="card-body">
+                    <div class="stat-label">Vücut Kitle İndeksi (BMI)</div>
+                    <div class="mt-2">
+                        <strong>Kadın:</strong> @Model.OrtalamaBmiKadin.ToString("0.0") <br />
+                        <strong>Erkek:</strong> @Model.OrtalamaBmiErkek.ToString("0.0")
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. BÖLÜM: PASTA VE DAİRESEL GRAFİKLER -->
+    <div class="row g-3">
+        <div class="col-md-4">
+            <div class="card dashboard-card h-100">
+                <div class="card-header text-primary"><i class="fas fa-venus-mars me-1"></i> Cinsiyet Dağılımı</div>
+                <div class="card-body">
+                    <div class="chart-box">
+                        <canvas id="chartCinsiyet"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card dashboard-card h-100">
+                <div class="card-header text-danger"><i class="fas fa-tint me-1"></i> Kan Grubu</div>
+                <div class="card-body">
+                    <div class="chart-box">
+                        <canvas id="chartKanGrubu"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card dashboard-card h-100">
+                <div class="card-header text-dark"><i class="fas fa-smoking me-1"></i> Sigara Kullanımı</div>
+                <div class="card-body">
+                    <div class="chart-box">
+                        <canvas id="chartSigara"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. BÖLÜM: BÖLÜMLER VE EKONOMİK DURUM -->
+    <div class="row g-3 mt-1">
+        <div class="col-md-8">
+            <div class="card dashboard-card">
+                <div class="card-header text-primary"><i class="fas fa-hospital me-1"></i> Bölüm Bazlı Başvuru Yoğunluğu</div>
+                <div class="card-body">
+                    <div class="chart-box-large">
+                        <canvas id="chartBolum"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card dashboard-card h-100">
+                <div class="card-header text-success"><i class="fas fa-wallet me-1"></i> Gelir Düzeyi</div>
+                <div class="card-body">
+                    <div class="chart-box-large">
+                        <canvas id="chartGelir"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. BÖLÜM: ŞİKAYET, İLAÇ VE GÜVENCE -->
+    <div class="row g-3 mt-1">
+        <div class="col-md-4">
+            <div class="card dashboard-card">
+                <div class="card-header text-info"><i class="fas fa-shield-alt me-1"></i> Sosyal Güvence</div>
+                <div class="card-body">
+                    <div class="chart-box">
+                        <canvas id="chartGuvence"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card dashboard-card">
+                <div class="card-header text-danger"><i class="fas fa-exclamation-circle me-1"></i> En Çok 3 Şikayet</div>
+                <div class="card-body">
+                    <div class="chart-box">
+                        <canvas id="chartSikayet"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card dashboard-card">
+                <div class="card-header text-success"><i class="fas fa-pills me-1"></i> En Çok 3 İlaç</div>
+                <div class="card-body">
+                    <div class="chart-box">
+                        <canvas id="chartIlac"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 5. BÖLÜM: TARİH VE SONUÇ -->
+    <div class="row g-3 mt-1">
+        <div class="col-md-8">
+            <div class="card dashboard-card">
+                <div class="card-header text-warning"><i class="fas fa-calendar-alt me-1"></i> Muayene Yoğunluğu</div>
+                <div class="card-body">
+                    <div class="chart-box">
+                        <canvas id="chartTarih"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card dashboard-card">
+                <div class="card-header text-success"><i class="fas fa-door-open me-1"></i> Tedavi Sonuç Durumu</div>
+                <div class="card-body">
+                    <div class="chart-box">
+                        <canvas id="chartSonuc"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    (function() {
+        const colorsMain = ['#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b', '#858796','#4e73df'];
+
+        // --- 1. CİNSİYET ---
+        var cinsiyetData = @Json.Serialize(Model.CinsiyetDagilimi);
+        if(document.getElementById('chartCinsiyet')){
+            new Chart(document.getElementById('chartCinsiyet'), {
+                type: 'pie',
+                data: {
+                    labels: cinsiyetData.map(x => x.key),
+                    datasets: [{ data: cinsiyetData.map(x => x.count), backgroundColor: ['#e74a3b', '#4e73df'] }]
+                },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+        }
+
+        // --- 2. KAN GRUBU ---
+        var kanData = @Json.Serialize(Model.KanGrubuDagilimi);
+        if(document.getElementById('chartKanGrubu')){
+            new Chart(document.getElementById('chartKanGrubu'), {
+                type: 'doughnut',
+                data: {
+                    labels: kanData.map(x => x.key),
+                    datasets: [{ data: kanData.map(x => x.count), backgroundColor: colorsMain }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, cutout: '70%', plugins: { legend: { position: 'right', labels: { boxWidth: 10 } } } }
+            });
+        }
+
+        // --- 3. SİGARA ---
+        var sigaraErkek = @Model.SigaraKullanimiErkek;
+        var sigaraKadin = @Model.SigaraKullanimiKadin;
+
+        if(document.getElementById('chartSigara')){
+            new Chart(document.getElementById('chartSigara'), {
+                type: 'bar',
+                data: {
+                    labels: ['Erkek', 'Kadın'],
+                    datasets: [{
+                        label: 'Kullanıcı Sayısı',
+                        data: [sigaraErkek, sigaraKadin],
+                        backgroundColor: ['#ffbe00', '#e74a3b'],
+                        barPercentage: 0.6,
+                        categoryPercentage: 0.8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            min: 0,
+                            suggestedMax: 10 
+                        }
+                    }
+                }
+            });
+        }
+
+        // --- 4. GELİR ---
+        var gelirData = @Json.Serialize(Model.GelirDuzeyiDagilimi);
+        if(document.getElementById('chartGelir')){
+            new Chart(document.getElementById('chartGelir'), {
+                type: 'bar',
+                data: {
+                    labels: gelirData.map(x => x.key),
+                    datasets: [{ label: 'Kişi', data: gelirData.map(x => x.count), backgroundColor: '#36b9cc', borderRadius: 4 }]
+                },
+                options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+            });
+        }
+
+        // --- 5. GÜVENCE ---
+        var guvenceData = @Json.Serialize(Model.GuvenceDagilimi);
+        if(document.getElementById('chartGuvence')){
+            new Chart(document.getElementById('chartGuvence'), {
+                type: 'pie',
+                data: {
+                    labels: guvenceData.map(x => x.key),
+                    datasets: [{ data: guvenceData.map(x => x.count), backgroundColor: colorsMain }]
+                },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+        }
+
+        // --- 6. BÖLÜM ---
+        var bolumData = @Json.Serialize(Model.BolumDagilimi);
+        if(document.getElementById('chartBolum')){
+            new Chart(document.getElementById('chartBolum'), {
+                type: 'bar',
+                data: {
+                    labels: bolumData.map(x => x.key),
+                    datasets: [{ label: 'Başvuru', data: bolumData.map(x => x.count), backgroundColor: '#4e73df', borderRadius: 3 }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+            });
+        }
+
+        // --- 7. ŞİKAYET ---
+        var sikayetData = @Json.Serialize(Model.EnCokSikayetler);
+        if(document.getElementById('chartSikayet')){
+            new Chart(document.getElementById('chartSikayet'), {
+                type: 'bar',
+                data: {
+                    labels: sikayetData.map(x => x.key),
+                    datasets: [{ label: 'Adet', data: sikayetData.map(x => x.count), backgroundColor: '#e74a3b' }]
+                },
+                options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+            });
+        }
+
+        // --- 8. İLAÇ ---
+        var ilacData = @Json.Serialize(Model.EnCokIlaclar);
+        if(document.getElementById('chartIlac')){
+            new Chart(document.getElementById('chartIlac'), {
+                type: 'bar',
+                data: {
+                    labels: ilacData.map(x => x.key),
+                    datasets: [{ label: 'Adet', data: ilacData.map(x => x.count), backgroundColor: '#1cc88a' }]
+                },
+                options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+            });
+        }
+
+        // --- 9. TARİH ---
+        var tarihData = @Json.Serialize(Model.EnYogunGunler);
+        if(document.getElementById('chartTarih')){
+            new Chart(document.getElementById('chartTarih'), {
+                type: 'line',
+                data: {
+                    labels: tarihData.map(x => x.key),
+                    datasets: [{
+                        label: 'Hasta Sayısı',
+                        data: tarihData.map(x => x.count),
+                        borderColor: '#f6c23e',
+                        backgroundColor: 'rgba(246, 194, 62, 0.1)',
+                        fill: true,
+                        tension: 0.3
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } }, plugins: { legend: { display: false } } }
+            });
+        }
+
+        // --- 10. SONUÇ ---
+        var sonucData = @Json.Serialize(Model.SonucDurumuDagilimi);
+        if(document.getElementById('chartSonuc')){
+            new Chart(document.getElementById('chartSonuc'), {
+                type: 'doughnut',
+                data: {
+                    labels: sonucData.map(x => x.key),
+                    datasets: [{ data: sonucData.map(x => x.count), backgroundColor: ['#1cc88a', '#f6c23e', '#e74a3b', '#858796'] }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, cutout: '60%', plugins: { legend: { position: 'right', labels: { boxWidth: 10 } } } }
+            });
+        }
+
+    })();
+</script>

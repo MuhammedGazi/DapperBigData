@@ -1,0 +1,517 @@
+﻿@model DashboardFullDto
+@{
+    ViewData["Title"] = "Dashboard";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<style>
+    .dashboard-container {
+        background-color: #f8f9fc;
+        border-radius: 10px;
+    }
+
+    .dashboard-card {
+        border: none;
+        border-radius: 15px;
+        box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.1);
+        transition: all 0.3s ease-in-out;
+        background-color: #fff;
+        overflow: hidden;
+    }
+
+        .dashboard-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 0.5rem 2rem 0 rgba(58, 59, 69, 0.2);
+        }
+
+        .dashboard-card .card-header {
+            background-color: #fff;
+            border-bottom: 1px solid #e3e6f0;
+            padding: 1.2rem;
+            font-weight: 700;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+            .dashboard-card .card-header i {
+                font-size: 1.2rem;
+                opacity: 0.8;
+            }
+
+    .chart-box {
+        position: relative;
+        height: 280px;
+        width: 100%;
+        padding: 10px;
+    }
+
+    .chart-box-large {
+        position: relative;
+        height: 400px;
+        width: 100%;
+        padding: 10px;
+    }
+
+    @@media (max-width: 768px) {
+        .chart-box, .chart-box-large
+
+    {
+        height: 250px;
+    }
+
+    }
+</style>
+
+<div class="container-fluid p-4 dashboard-container">
+
+    <div class="row g-4 mb-4">
+        <div class="col-md-4">
+            <div class="card dashboard-card h-100">
+                <div class="card-header text-primary">
+                    <span>Cinsiyet Dağılımı</span>
+                    <i class="fas fa-venus-mars"></i>
+                </div>
+                <div class="card-body">
+                    <div class="chart-box">
+                        <canvas id="chartLabCinsiyet"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card dashboard-card h-100">
+                <div class="card-header text-warning">
+                    <span>Yaş Grubu Analizi</span>
+                    <i class="fas fa-child"></i>
+                </div>
+                <div class="card-body">
+                    <div class="chart-box">
+                        <canvas id="chartLabYas"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card dashboard-card h-100">
+                <div class="card-header text-danger">
+                    <span>Kan Grubu Dağılımı</span>
+                    <i class="fas fa-tint"></i>
+                </div>
+                <div class="card-body">
+                    <div class="chart-box">
+                        <canvas id="chartLabKanGrubu"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <div class="col-md-8">
+            <div class="card dashboard-card h-100">
+                <div class="card-header text-primary">
+                    <span>Test Bazlı Referans Durumları</span>
+                    <i class="fas fa-microscope"></i>
+                </div>
+                <div class="card-body">
+                    <div class="chart-box-large">
+                        <canvas id="chartLabTestDetay"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card dashboard-card h-100">
+                <div class="card-header text-info">
+                    <span>Bölgesel Risk Haritası</span>
+                    <i class="fas fa-map-marker-alt"></i>
+                </div>
+                <div class="card-body">
+                    <div class="chart-box-large">
+                        <canvas id="chartLabBolge"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <div class="col-md-4">
+            <div class="card dashboard-card h-100">
+                <div class="card-header text-dark">
+                    <span>Meslek Grubu Analizi</span>
+                    <i class="fas fa-briefcase"></i>
+                </div>
+                <div class="card-body">
+                    <div class="chart-box">
+                        <canvas id="chartLabMeslek"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card dashboard-card h-100">
+                <div class="card-header text-success">
+                    <span>Gelir Düzeyi Etkisi</span>
+                    <i class="fas fa-wallet"></i>
+                </div>
+                <div class="card-body">
+                    <div class="chart-box">
+                        <canvas id="chartLabGelir"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card dashboard-card h-100">
+                <div class="card-header text-secondary">
+                    <span>Hane Halkı Etkisi</span>
+                    <i class="fas fa-home"></i>
+                </div>
+                <div class="card-body">
+                    <div class="chart-box">
+                        <canvas id="chartLabHane"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <div class="col-md-6">
+            <div class="card dashboard-card h-100">
+                <div class="card-header text-warning">
+                    <span>BMI (Obezite) Kategorileri</span>
+                    <i class="fas fa-weight"></i>
+                </div>
+                <div class="card-body">
+                    <div class="chart-box">
+                        <canvas id="chartLabBMI"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card dashboard-card h-100">
+                <div class="card-header text-dark">
+                    <span>Sigara Kullanımı</span>
+                    <i class="fas fa-smoking"></i>
+                </div>
+                <div class="card-body">
+                    <div class="chart-box">
+                        <canvas id="chartLabSigara"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    (function() {
+        function getKey(item) { return item.Key || item.key || item.grupAdi || "Bilinmiyor"; }
+        function getCount(item) { return item.Count || item.count || item.vakaSayisi || 0; }
+
+        Chart.defaults.font.family = "'Nunito', sans-serif";
+        Chart.defaults.color = '#858796';
+
+        const colorsMain = ['#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b', '#858796', '#5a5c69', '#2e59d9'];
+
+        var cinsiyetData = @Json.Serialize(Model.CinsiyetDagilimi);
+        var ctxCinsiyet = document.getElementById('chartLabCinsiyet');
+
+        if(ctxCinsiyet && cinsiyetData && cinsiyetData.length > 0){
+            new Chart(ctxCinsiyet, {
+                type: 'pie',
+                data: {
+                    labels: cinsiyetData.map(x => getKey(x)),
+                    datasets: [{
+                        data: cinsiyetData.map(x => getCount(x)),
+                        backgroundColor: ['#e74a3b', '#4e73df'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'bottom', labels: { usePointStyle: true, padding: 20 } } }
+                }
+            });
+        }
+
+        var kanData = @Json.Serialize(Model.KanGrubuDagilimi);
+        var ctxKan = document.getElementById('chartLabKanGrubu');
+
+        if(ctxKan && kanData && kanData.length > 0){
+            new Chart(ctxKan, {
+                type: 'doughnut',
+                data: {
+                    labels: kanData.map(x => getKey(x)),
+                    datasets: [{
+                        data: kanData.map(x => getCount(x)),
+                        backgroundColor: colorsMain,
+                        borderWidth: 2,
+                        borderColor: '#fff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '75%',
+                    plugins: { legend: { position: 'right', labels: { boxWidth: 10, usePointStyle: true } } }
+                }
+            });
+        }
+
+        var sigaraErkek = @Model.SigaraKullanimiErkek;
+        var sigaraKadin = @Model.SigaraKullanimiKadin;
+        var ctxSigara = document.getElementById('chartLabSigara');
+
+        if(ctxSigara){
+            new Chart(ctxSigara, {
+                type: 'bar',
+                data: {
+                    labels: ['Erkek', 'Kadın'],
+                    datasets: [{
+                        label: 'Kullanıcı Sayısı',
+                        data: [sigaraErkek, sigaraKadin],
+                        backgroundColor: ['#4e73df', '#e74a3b'],
+                        borderRadius: 10,
+                        barThickness: 50 
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true, grid: { borderDash: [2, 2] } },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+        }
+
+        var labVerileri = @Json.Serialize(Model.LabAnalizVerileri);
+        var ctxTest = document.getElementById('chartLabTestDetay');
+
+        if(ctxTest && labVerileri && labVerileri.length > 0){
+            var durumlar = {};
+            labVerileri.forEach(function(item) {
+                var durum = item.ReferansDurumu || item.referansDurumu;
+                if(!durumlar[durum]) durumlar[durum] = 0;
+                durumlar[durum] += (item.VakaSayisi || item.vakaSayisi || 0);
+            });
+
+            new Chart(ctxTest, {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(durumlar),
+                    datasets: [{
+                        label: 'Toplam Vaka',
+                        data: Object.values(durumlar),
+                        backgroundColor: ['#1cc88a', '#f6c23e', '#e74a3b'],
+                        borderRadius: 5
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: { y: { grid: { borderDash: [2, 2] } } }
+                }
+            });
+        }
+
+        var ctxMeslek = document.getElementById('chartLabMeslek');
+        if(ctxMeslek && labVerileri){
+            var meslekList = labVerileri.filter(x => (x.AnalizTuru || x.analizTuru) == 'Meslek');
+            var meslekMap = {};
+            meslekList.forEach(m => {
+                var ad = m.GrupAdi || m.grupAdi;
+                if(!meslekMap[ad]) meslekMap[ad] = 0;
+                meslekMap[ad] += (m.VakaSayisi || m.vakaSayisi);
+            });
+
+            new Chart(ctxMeslek, {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(meslekMap).slice(0, 10),
+                    datasets: [{
+                        label: 'Kişi',
+                        data: Object.values(meslekMap).slice(0, 10),
+                        backgroundColor: '#4e73df',
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: { x: { grid: { borderDash: [2, 2] } } }
+                }
+            });
+        }
+
+        var gelirData = @Json.Serialize(Model.GelirDagilimi);
+        var ctxGelir = document.getElementById('chartLabGelir');
+        if(ctxGelir && gelirData){
+             new Chart(ctxGelir, {
+                type: 'bar',
+                data: {
+                    labels: gelirData.map(x => getKey(x)),
+                    datasets: [{
+                        label: 'Kişi',
+                        data: gelirData.map(x => getCount(x)),
+                        backgroundColor: '#36b9cc',
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { x: { grid: { borderDash: [2, 2] } } }
+                }
+            });
+        }
+
+        var ctxBMI = document.getElementById('chartLabBMI');
+        if(ctxBMI && labVerileri){
+            var bmiList = labVerileri.filter(x => (x.AnalizTuru || x.analizTuru) == 'BMI');
+            var bmiMap = {};
+            bmiList.forEach(m => {
+                var ad = m.GrupAdi || m.grupAdi;
+                if(!bmiMap[ad]) bmiMap[ad] = 0;
+                bmiMap[ad] += (m.VakaSayisi || m.vakaSayisi);
+            });
+
+            new Chart(ctxBMI, {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(bmiMap),
+                    datasets: [{
+                        data: Object.values(bmiMap),
+                        backgroundColor: ['#4e73df', '#1cc88a', '#e74a3b', '#f6c23e'], 
+                        borderWidth: 2,
+                        borderColor: '#fff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '60%',
+                    plugins: { legend: { position: 'bottom', labels: { usePointStyle: true } } }
+                }
+            });
+        }
+
+
+        var ctxYas = document.getElementById('chartLabYas');
+        if(ctxYas && labVerileri){
+            var yasList = labVerileri.filter(x => (x.AnalizTuru || x.analizTuru) == 'YasGrubu');
+
+            var yasMap = {};
+            yasList.forEach(m => {
+                var ad = m.GrupAdi || m.grupAdi;
+                if(!yasMap[ad]) yasMap[ad] = 0;
+                yasMap[ad] += (m.VakaSayisi || m.vakaSayisi);
+            });
+
+            if(Object.keys(yasMap).length > 0) {
+                new Chart(ctxYas, {
+                    type: 'bar',
+                    data: {
+                        labels: Object.keys(yasMap),
+                        datasets: [{
+                            label: 'Vaka',
+                            data: Object.values(yasMap),
+                            backgroundColor: '#f6c23e',
+                            borderRadius: 5
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: { y: { grid: { borderDash: [2, 2] } } }
+                    }
+                });
+            }
+        }
+
+        var ctxHane = document.getElementById('chartLabHane');
+        if(ctxHane && labVerileri){
+             var haneList = labVerileri.filter(x => (x.AnalizTuru || x.analizTuru) == 'HaneHalki');
+
+             var haneMap = {};
+             haneList.forEach(m => {
+                var ad = m.GrupAdi || m.grupAdi;
+                if(!haneMap[ad]) haneMap[ad] = 0;
+                haneMap[ad] += (m.VakaSayisi || m.vakaSayisi);
+             });
+
+             if(Object.keys(haneMap).length > 0) {
+                 new Chart(ctxHane, {
+                    type: 'line', 
+                    data: {
+                        labels: Object.keys(haneMap).sort(), 
+                        datasets: [{
+                            label: 'Risk/Vaka Yoğunluğu',
+                            data: Object.values(haneMap),
+                            borderColor: '#858796',
+                            backgroundColor: 'rgba(133, 135, 150, 0.1)',
+                            fill: true,
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: { y: { beginAtZero: true } }
+                    }
+                });
+            }
+        }
+
+        var ctxBolge = document.getElementById('chartLabBolge');
+        if(ctxBolge && labVerileri){
+             var bolgeList = labVerileri.filter(x => (x.AnalizTuru || x.analizTuru) == 'Bolge');
+             var bolgeMap = {};
+             bolgeList.forEach(m => {
+                var ad = m.GrupAdi || m.grupAdi;
+                if(!bolgeMap[ad]) bolgeMap[ad] = 0;
+                bolgeMap[ad] += (m.VakaSayisi || m.vakaSayisi);
+             });
+
+             new Chart(ctxBolge, {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(bolgeMap),
+                    datasets: [{
+                        label: 'Vaka',
+                        data: Object.values(bolgeMap),
+                        backgroundColor: '#f6c23e',
+                        borderRadius: 5
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: { y: { grid: { borderDash: [2, 2] } } }
+                }
+            });
+        }
+    })();
+</script>
