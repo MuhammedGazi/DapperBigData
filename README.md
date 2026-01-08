@@ -105,14 +105,16 @@ Proje, modern ve performans odaklı teknolojilerle geliştirilmiştir.
 <details open>
 <summary><b>1. Genel Dashboard Görünümü</b> (Tıklayıp Kapatabilirsiniz)</summary>
 <br>
-<img src="https://via.placeholder.com/1200x600?text=Dashboard+Ekran+Görüntüsü+(Buraya+Kendi+Resmini+Koy)" alt="Dashboard" width="100%">
+<img width="1914" height="1079" alt="Image" src="https://github.com/user-attachments/assets/fa792a3c-a56e-4ab1-8f93-e87ed3af0ad2" />
+<img width="1913" height="1073" alt="Image" src="https://github.com/user-attachments/assets/972bf075-3e1f-4bbf-8220-e8601af8d095" />
+<img width="1913" height="1078" alt="Image" src="https://github.com/user-attachments/assets/ecad41b2-b9e1-41fe-a563-2714a6d8e61f" />
+<img width="1912" height="1075" alt="Image" src="https://github.com/user-attachments/assets/04cb6ca8-b6ee-452a-ae59-d6bbf940443e" />
+<img width="1916" height="1073" alt="Image" src="https://github.com/user-attachments/assets/035fe1cb-7d20-4676-a8fa-9eb6abe94e78" />
+<img width="1915" height="1074" alt="Image" src="https://github.com/user-attachments/assets/2b0f9818-b26a-4167-83c3-fd1edca28023" />
+<img width="1902" height="1076" alt="Image" src="https://github.com/user-attachments/assets/7a7d31ee-d9ab-42bd-a339-c2d137ba08ee" />
+<img width="1901" height="1077" alt="Image" src="https://github.com/user-attachments/assets/f914fc1f-cbcc-4086-80be-a340501104cc" />
 </details>
 
-<details>
-<summary><b>2. Yapay Zeka Analiz Modalı</b></summary>
-<br>
-<img src="https://via.placeholder.com/800x500?text=Gemini+AI+Raporu+(Buraya+Kendi+Resmini+Koy)" alt="AI Modal" width="100%">
-</details>
 
 ---
 
