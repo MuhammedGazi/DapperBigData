@@ -1,10 +1,16 @@
 using HealthBigData.Context;
+using HealthBigData.Controllers;
 using HealthBigData.Repositories.ChartRepositories;
 using HealthBigData.Repositories.HastaRepositories;
-
+using Polly;
+using Polly.Extensions.Http;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+
+builder.Services.AddHttpClient<GeminiService>()
+       .SetHandlerLifetime(TimeSpan.FromMinutes(5))
+       .AddPolicyHandler(GetRetryPolicy());
 builder.Services.AddScoped<ICityRepository, CityRepository>();
 builder.Services.AddScoped<IDashboardChartRepository, DashboardChartRepository>();
 builder.Services.AddScoped<AppDbContext>();
@@ -34,3 +40,11 @@ app.MapControllerRoute(
 
 
 app.Run();
+
+static IAsyncPolicy<HttpResponseMessage> GetRetryPolicy()
+{
+    return HttpPolicyExtensions
+        .HandleTransientHttpError()
+        .OrResult(msg => msg.StatusCode == System.Net.HttpStatusCode.NotFound)
+        .WaitAndRetryAsync(3, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)));
+}

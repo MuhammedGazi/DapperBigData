@@ -11,96 +11,75 @@ namespace HealthBigData.Repositories.HastaRepositories
         public async Task<CityDescriptionDto> GetCityAsync(string cityName)
         {
             var sql = @"
-        -- 1. Toplam Hasta
-        SELECT Count(*) FROM HastaKayitlari WHERE Sehir=@Sehir;
-        
-        -- 2. Toplam Başvuru
-        SELECT sum(BasvuruSayisi) FROM HastaKayitlari WHERE Sehir=@Sehir;
-        
-        -- 3. Ortalama Yaş
-        SELECT AVG(Yas) FROM HastaKayitlari WHERE Sehir=@Sehir;
-        
-        -- 4. Meslek Listesi
-        SELECT DISTINCT Meslek FROM HastaKayitlari WHERE Sehir=@Sehir;
-        
-        -- 5. Gelir Düzeyi Dağılımı (Düzeltildi: İsim + Sayı)
-        SELECT GelirDuzeyi as [Key], Count(*) as [Count] FROM HastaKayitlari WHERE Sehir=@Sehir GROUP BY GelirDuzeyi;
-        
-        -- 6. Güvence Dağılımı
-        SELECT Guvence as [Key], Count(*) as [Count] FROM HastaKayitlari WHERE Sehir=@Sehir GROUP BY Guvence;
-        
-        -- 7. Hane Halkı Ortalaması
-        SELECT AVG(HaneHalkiSayisi) FROM HastaKayitlari WHERE Sehir=@Sehir;
-        
-        -- 8. Cinsiyet Dağılımı
-        SELECT Cinsiyet as [Key], Count(*) as [Count] FROM HastaKayitlari WHERE Sehir=@Sehir GROUP BY Cinsiyet;
-        
-        -- 9. Kan Grubu Dağılımı
-        SELECT KanGrubu as [Key], Count(*) as [Count] FROM HastaKayitlari WHERE Sehir=@Sehir GROUP BY KanGrubu;
-        
-        -- 10. BMI Kadın
-        SELECT AVG(BMI) FROM HastaKayitlari WHERE Sehir=@Sehir AND Cinsiyet='Kadın';
-        
-        -- 11. BMI Erkek
-        SELECT AVG(BMI) FROM HastaKayitlari WHERE Sehir=@Sehir AND Cinsiyet='Erkek';
-        
-        -- 12. Sigara Erkek
-        SELECT Count(*) FROM HastaKayitlari WHERE Sehir=@Sehir AND Cinsiyet='Erkek' AND SigaraKullanimi='Evet';
-        
-        -- 13. Sigara Kadın
-        SELECT Count(*) FROM HastaKayitlari WHERE Sehir=@Sehir AND Cinsiyet='Kadın' AND SigaraKullanimi='Evet';
-        
-        -- 14. Bölüm Dağılımı
-        SELECT Bolum as [Key], COUNT(*) as [Count] FROM HastaKayitlari WHERE Sehir=@Sehir GROUP BY Bolum;
-        
-        -- 15. En Çok 3 Şikayet
-        SELECT TOP 3 Sikayet as [Key], COUNT(*) as [Count] FROM HastaKayitlari WHERE Sehir=@Sehir GROUP BY Sikayet ORDER BY [Count] DESC;
-        
-        -- 16. Ortalama Maliyet
-        SELECT AVG(Maliyet) FROM HastaKayitlari WHERE Sehir=@Sehir;
-        
-        -- 17. Toplam Maliyet
-        SELECT SUM(Maliyet) FROM HastaKayitlari WHERE Sehir=@Sehir;
-        
-        -- 18. Sonuç Durumu
-        SELECT SonucDurumu as [Key], COUNT(*) as [Count] FROM HastaKayitlari WHERE Sehir=@Sehir GROUP BY SonucDurumu;
-        
-        -- 19. En Çok 3 İlaç (Sıralama mantığı düzeltildi: Sayıya göre)
-        SELECT TOP 3 IlacAdi as [Key], COUNT(*) as [Count] FROM HastaKayitlari WHERE Sehir=@Sehir GROUP BY IlacAdi ORDER BY [Count] DESC;
-        
-        -- 20. Muayene Yoğunluğu (Tarihleri string olarak alıyoruz)
-        SELECT CAST(MuayeneTarihi as NVARCHAR) as [Key], count(*) as [Count] FROM HastaKayitlari WHERE Sehir=@Sehir GROUP BY MuayeneTarihi ORDER BY [Count] DESC;
-    ";
+    SELECT 
+        COUNT(*) as ToplamHasta,
+        SUM(BasvuruSayisi) as ToplamBasvuru,
+        AVG(Yas) as OrtalamaYas,
+        AVG(HaneHalkiSayisi) as OrtalamaHaneHalki,
+        AVG(Maliyet) as OrtalamaMaliyet,
+        SUM(Maliyet) as ToplamMaliyet,
+        -- Cinsiyete Özel Hesaplamalar (CASE WHEN ile)
+        AVG(CASE WHEN Cinsiyet='Kadın' THEN BMI END) as OrtalamaBmiKadin,
+        AVG(CASE WHEN Cinsiyet='Erkek' THEN BMI END) as OrtalamaBmiErkek,
+        COUNT(CASE WHEN Cinsiyet='Erkek' AND SigaraKullanimi IN ('Evet', 'Var') THEN 1 END) as SigaraKullanimiErkek,
+        COUNT(CASE WHEN Cinsiyet='Kadın' AND SigaraKullanimi IN ('Evet', 'Var') THEN 1 END) as SigaraKullanimiKadin
+    FROM HastaKayitlari 
+    WHERE Sehir=@Sehir;
+
+    -- 2. Meslek Listesi
+    SELECT DISTINCT Meslek FROM HastaKayitlari WHERE Sehir=@Sehir;
+    
+    -- 3. Gelir Dağılımı
+    SELECT GelirDuzeyi as [Key], Count(*) as [Count] FROM HastaKayitlari WHERE Sehir=@Sehir GROUP BY GelirDuzeyi;
+    
+    -- 4. Güvence Dağılımı
+    SELECT Guvence as [Key], Count(*) as [Count] FROM HastaKayitlari WHERE Sehir=@Sehir GROUP BY Guvence;
+    
+    -- 5. Cinsiyet Dağılımı
+    SELECT Cinsiyet as [Key], Count(*) as [Count] FROM HastaKayitlari WHERE Sehir=@Sehir GROUP BY Cinsiyet;
+    
+    -- 6. Kan Grubu Dağılımı
+    SELECT KanGrubu as [Key], Count(*) as [Count] FROM HastaKayitlari WHERE Sehir=@Sehir GROUP BY KanGrubu;
+    
+    -- 7. Bölüm Dağılımı
+    SELECT Bolum as [Key], COUNT(*) as [Count] FROM HastaKayitlari WHERE Sehir=@Sehir GROUP BY Bolum;
+    
+    -- 8. En Çok Şikayet (Top 3)
+    SELECT TOP 3 Sikayet as [Key], COUNT(*) as [Count] FROM HastaKayitlari WHERE Sehir=@Sehir GROUP BY Sikayet ORDER BY [Count] DESC;
+    
+    -- 9. Sonuç Durumu
+    SELECT SonucDurumu as [Key], COUNT(*) as [Count] FROM HastaKayitlari WHERE Sehir=@Sehir GROUP BY SonucDurumu;
+    
+    -- 10. En Çok İlaç (Top 3)
+    SELECT TOP 3 IlacAdi as [Key], COUNT(*) as [Count] FROM HastaKayitlari WHERE Sehir=@Sehir GROUP BY IlacAdi ORDER BY [Count] DESC;
+    
+    -- 11. Muayene Yoğunluğu
+    SELECT CAST(MuayeneTarihi as NVARCHAR(20)) as [Key], count(*) as [Count] FROM HastaKayitlari WHERE Sehir=@Sehir GROUP BY CAST(MuayeneTarihi as NVARCHAR(20)) ORDER BY [Count] DESC;
+";
             using (var multi = await connection.QueryMultipleAsync(sql, new { Sehir = cityName }))
             {
                 var dto = new CityDescriptionDto();
 
-                dto.ToplamHastaSayisi = await multi.ReadFirstAsync<int>();
-                dto.ToplamBasvuru = await multi.ReadFirstOrDefaultAsync<int>();
-                dto.OrtalamaYas = await multi.ReadFirstOrDefaultAsync<double>();
+                var anaIstatistikler = await multi.ReadFirstAsync<dynamic>();
+
+                dto.ToplamHastaSayisi = (int)anaIstatistikler.ToplamHasta;
+                dto.ToplamBasvuru = (int)(anaIstatistikler.ToplamBasvuru ?? 0);
+                dto.OrtalamaYas = (double)(anaIstatistikler.OrtalamaYas ?? 0);
+                dto.OrtalamaHaneHalki = (double)(anaIstatistikler.OrtalamaHaneHalki ?? 0);
+                dto.OrtalamaMaliyet = (decimal)(anaIstatistikler.OrtalamaMaliyet ?? 0);
+                dto.ToplamMaliyet = (decimal)(anaIstatistikler.ToplamMaliyet ?? 0);
+                dto.OrtalamaBmiKadin = (double)(anaIstatistikler.OrtalamaBmiKadin ?? 0);
+                dto.OrtalamaBmiErkek = (double)(anaIstatistikler.OrtalamaBmiErkek ?? 0);
+                dto.SigaraKullanimiErkek = (int)anaIstatistikler.SigaraKullanimiErkek;
+                dto.SigaraKullanimiKadin = (int)anaIstatistikler.SigaraKullanimiKadin;
 
                 dto.Meslekler = (await multi.ReadAsync<string>()).ToList();
-
                 dto.GelirDuzeyiDagilimi = (await multi.ReadAsync<StatDto>()).ToList();
                 dto.GuvenceDagilimi = (await multi.ReadAsync<StatDto>()).ToList();
-
-                dto.OrtalamaHaneHalki = await multi.ReadFirstOrDefaultAsync<double>();
-
                 dto.CinsiyetDagilimi = (await multi.ReadAsync<StatDto>()).ToList();
                 dto.KanGrubuDagilimi = (await multi.ReadAsync<StatDto>()).ToList();
-
-                dto.OrtalamaBmiKadin = await multi.ReadFirstOrDefaultAsync<double>();
-                dto.OrtalamaBmiErkek = await multi.ReadFirstOrDefaultAsync<double>();
-
-                dto.SigaraKullanimiErkek = await multi.ReadFirstAsync<int>();
-                dto.SigaraKullanimiKadin = await multi.ReadFirstAsync<int>();
-
                 dto.BolumDagilimi = (await multi.ReadAsync<StatDto>()).ToList();
                 dto.EnCokSikayetler = (await multi.ReadAsync<StatDto>()).ToList();
-
-                dto.OrtalamaMaliyet = await multi.ReadFirstOrDefaultAsync<decimal>();
-                dto.ToplamMaliyet = await multi.ReadFirstOrDefaultAsync<decimal>();
-
                 dto.SonucDurumuDagilimi = (await multi.ReadAsync<StatDto>()).ToList();
                 dto.EnCokIlaclar = (await multi.ReadAsync<StatDto>()).ToList();
                 dto.EnYogunGunler = (await multi.ReadAsync<StatDto>()).ToList();

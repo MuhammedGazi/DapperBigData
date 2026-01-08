@@ -49,7 +49,7 @@ namespace HealthBigData.Repositories.ChartRepositories
         -- 11. Sonuç Durumu Dağılımı
         SELECT SonucDurumu as [Key], COUNT(*) as [Count] FROM HastaKayitlari GROUP BY SonucDurumu;
 
-        -- 12. DETAYLI LABORATUVAR ANALİZLERİ (Hepsi Tek Listede - UNION ALL)
+        -- 12. DETAYLI LABORATUVAR ANALİZLERİ 
         
         -- A) Meslek Analizi
         SELECT 

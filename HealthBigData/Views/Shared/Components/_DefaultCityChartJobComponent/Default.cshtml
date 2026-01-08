@@ -2,6 +2,49 @@
 @model CityDescriptionDto
 
 <style>
+    #aiResultModal .modal-body {
+        background-color: #fff !important;
+        color: #2c3e50;
+        font-size: 1.05rem;
+        line-height: 1.6;
+    }
+
+    .ai-content-style {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+        .ai-content-style h1,
+        .ai-content-style h2,
+        .ai-content-style h3 {
+            color: #0d6efd;
+            margin-top: 1.5rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+
+        .ai-content-style ul,
+        .ai-content-style ol {
+            padding-left: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .ai-content-style li {
+            margin-bottom: 0.5rem;
+        }
+
+        .ai-content-style strong {
+            color: #000;
+            font-weight: 700;
+        }
+
+        .ai-content-style pre,
+        .ai-content-style code {
+            background-color: #f1f3f5;
+            color: #d63384;
+            padding: 0.2rem 0.4rem;
+            border-radius: 4px;
+            font-family: monospace;
+        }
     .dashboard-card {
         border: none;
         border-radius: 12px;
@@ -74,7 +117,45 @@
 </style>
 
 <div class="container-fluid p-2">
+    <!-- 0. BÖLÜM: YAPAY ZEKA -->
+    <div class="row mb-4">
+        <div class="col-12 text-end">
+            <button type="button" class="btn btn-primary" id="btnAnaliz" onclick="analizEt()">
+                <span id="btnSpinner" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                <span id="btnText"><i class="fas fa-robot me-2"></i> Yapay Zeka ile Analiz Et</span>
+            </button>
+        </div>
+    </div>
+    <div class="modal fade" id="aiResultModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable modal-dialog-centered">
+            <div class="modal-content bg-white text-dark shadow-lg border-0 rounded-4">
 
+                <div class="modal-header text-white" style="background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%); border-top-left-radius: inherit; border-top-right-radius: inherit;">
+                    <h5 class="modal-title d-flex align-items-center">
+                        <i class="fas fa-brain me-2 fa-lg"></i>
+                        <span>Sağlık Analiz Raporu</span>
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Kapat"></button>
+                </div>
+
+                <div class="modal-body p-4" style="background-color: #f8f9fa;">
+                    <div id="aiLoading" class="text-center py-5 d-none">
+                        <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
+                            @* <span class="visually-hidden">Yükleniyor...</span> *@
+                        </div>
+                        <h5 class="mt-4 text-primary fw-bold">Veriler Analiz Ediliyor...</h5>
+                        <p class="text-muted">Yapay zeka sağlık verilerini işlerken lütfen bekleyiniz.</p>
+                    </div>
+
+                    <div id="aiResponseContent" class="ai-content-style"></div>
+                </div>
+
+                <div class="modal-footer bg-light border-top-0">
+                    <button type="button" class="btn btn-outline-secondary px-4" data-bs-dismiss="modal">Kapat</button>
+                </div>
+            </div>
+        </div>
+    </div>
     <!-- 1. BÖLÜM: ÜST KARTLAR -->
     <div class="row g-3 mb-4">
         <div class="col-xl-3 col-md-6">
@@ -396,4 +477,59 @@
         }
 
     })();
+</script>
+
+<script>
+    function analizEt() {
+        var btnText = document.getElementById("btnText");
+        var btnSpinner = document.getElementById("btnSpinner");
+        var btnAnaliz = document.getElementById("btnAnaliz");
+
+        btnText.innerText = "Veriler İnceleniyor...";
+        btnSpinner.classList.remove("d-none");
+        btnAnaliz.disabled = true;
+
+        var myModal = new bootstrap.Modal(document.getElementById('aiResultModal'));
+        document.getElementById("aiResponseContent").innerHTML = "";
+        document.getElementById("aiLoading").classList.remove("d-none");
+        myModal.show();
+
+        var cityName = '@ViewBag.SehirAdi';
+
+        if(!cityName) {
+            console.error("Şehir adı bulunamadı! Lütfen Controller'da ViewBag.SehirAdi tanımlayın.");
+            cityName = "Diyarbakır"; // Test için varsayılan
+        }
+        var requestData = { cityName: cityName };
+
+        $.ajax({
+            url: '/Default/GetAiRecommendation',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(requestData),
+            success: function (response) {
+                document.getElementById("aiLoading").classList.add("d-none");
+
+                // Google Overload Hatası Kontrolü
+                if (response && response.error) {
+                    document.getElementById("aiResponseContent").innerHTML =
+                        '<div class="alert alert-warning">Sistem yoğun, lütfen tekrar deneyin.</div>';
+                } else {
+                    document.getElementById("aiResponseContent").innerHTML = response;
+                }
+            },
+            error: function (xhr, status, error) {
+                document.getElementById("aiLoading").classList.add("d-none");
+                document.getElementById("aiResponseContent").innerHTML = `
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-triangle me-2"></i> Hata: ${xhr.responseText || error}
+                    </div>`;
+            },
+            complete: function() {
+                btnText.innerHTML = '<i class="fas fa-robot me-2"></i> Yapay Zeka ile Analiz Et';
+                btnSpinner.classList.add("d-none");
+                btnAnaliz.disabled = false;
+            }
+        });
+    }
 </script>
